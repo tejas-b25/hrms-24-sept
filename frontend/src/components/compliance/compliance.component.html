@@ -1,0 +1,120 @@
+<p-confirmDialog></p-confirmDialog>
+
+<div class="app-container">
+  <!-- Sidebar -->
+  <ng-container [ngSwitch]="userRole">
+    <div class="sidebar" *ngSwitchCase="'ADMIN'"><app-sidebar></app-sidebar></div>
+    <div class="sidebar" *ngSwitchCase="'HR'"><app-hr-sidebar></app-hr-sidebar></div>
+    <div class="sidebar" *ngSwitchCase="'MANAGER'"><app-manager-sidebar></app-manager-sidebar></div>
+    <div class="sidebar" *ngSwitchCase="'FINANCE'"><app-finance-sidebar></app-finance-sidebar></div>
+    <div class="sidebar" *ngSwitchCase="'EMPLOYEE'"><app-employee-sidebar></app-employee-sidebar></div>
+  </ng-container>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Back Button -->
+    <button class="action-button cancel mb-3" (click)="goBack()">← Back</button>
+
+    <!-- Compliance Form -->
+    <div *ngIf="isHrOrAdmin()" class="form-container">
+      <h2>{{ editMode ? 'Edit Compliance' : 'Add Compliance' }}</h2>
+      <form [formGroup]="complianceForm" (ngSubmit)="confirmSubmit()">
+        <div class="form-group">
+          <label>Name</label>
+          <input formControlName="name" placeholder="Enter compliance name" maxlength="25"
+            (keypress)="allowOnlyLetters($event)" />
+          <small *ngIf="isInvalid('name')" class="text-danger">Name is required and max 25 letters only.</small>
+        </div>
+
+        <div class="form-group">
+          <label>Description</label>
+          <textarea formControlName="description" placeholder="Enter description" maxlength="100"></textarea>
+          <small *ngIf="isInvalid('description')" class="text-danger">Description is required (max 100 chars).</small>
+        </div>
+
+        <div class="form-group">
+          <label>Type</label>
+          <select formControlName="type">
+            <option value="" disabled>Select type</option>
+            <option *ngFor="let t of types" [value]="t">{{ t }}</option>
+          </select>
+          <small *ngIf="isInvalid('type')" class="text-danger">Type is required.</small>
+        </div>
+
+        <div class="form-group">
+          <label>Frequency</label>
+          <select formControlName="frequency">
+            <option value="" disabled>Select frequency</option>
+            <option *ngFor="let f of frequencies" [value]="f">{{ f }}</option>
+          </select>
+          <small *ngIf="isInvalid('frequency')" class="text-danger">Frequency is required.</small>
+        </div>
+
+        <!-- Due Date -->
+        <div class="form-group">
+          <label>Due Date</label>
+          <input type="date" formControlName="dueDate" class="form-control" [attr.min]="today"
+            (input)="restrictPastDate($event)" (keypress)="onKeyPressDueDate($event)" />
+          <small class="text-danger" *ngIf="isInvalid('dueDate')">
+            Due Date is required, cannot be in the past, and year cannot exceed 4 digits.
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label>Penalty</label>
+          <input formControlName="penalty" placeholder="Enter penalty amount" maxlength="5"
+            (keypress)="allowOnlyNumbers($event)" />
+          <small *ngIf="isInvalid('penalty')" class="text-danger">Penalty is required (numeric only, max 5
+            digits).</small>
+        </div>
+
+        <div class="form-check">
+          <input type="checkbox" formControlName="documentRequired" id="documentRequired" />
+          <label for="documentRequired">Document Required</label>
+        </div>
+
+        <div class="form-check">
+          <input type="checkbox" formControlName="isActive" id="isActive" />
+          <label for="isActive">Is Active</label>
+        </div>
+
+        <button type="submit" class="action-button mt-2">{{ editMode ? 'Update' : 'Create' }}</button>
+        <button type="button" class="action-button cancel mt-2 ms-2" (click)="resetForm()">Reset</button>
+      </form>
+    </div>
+
+    <hr />
+
+    <!-- All Compliances Table -->
+    <h3>All Compliances</h3>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Frequency</th>
+          <th>Due Date</th>
+          <th>Penalty</th>
+          <th>Document Required</th>
+          <th>Status</th>
+          <th *ngIf="isHrOrAdmin()">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let c of compliances">
+          <td>{{ c.name }}</td>
+          <td>{{ c.type }}</td>
+          <td>{{ c.frequency }}</td>
+          <td>{{ c.dueDate }}</td>
+          <td>{{ c.penalty }}</td>
+          <td>{{ c.documentRequired ? 'Yes' : 'No' }}</td>
+          <td>{{ c.isActive ? 'Active' : 'Inactive' }}</td>
+          <td *ngIf="isHrOrAdmin()">
+            <button class="action-button" (click)="onEdit(c)">Edit</button>
+            <button class="action-button cancel ms-1" (click)="onDelete(c.complianceId!)">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

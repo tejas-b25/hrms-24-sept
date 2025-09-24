@@ -1,0 +1,120 @@
+<div class="app-container">
+  <!-- Role-based Sidebar -->
+  <ng-container [ngSwitch]="userRole">
+    <app-sidebar *ngSwitchCase="'ADMIN'"></app-sidebar>
+    <app-hr-sidebar *ngSwitchCase="'HR'"></app-hr-sidebar>
+    <app-manager-sidebar *ngSwitchCase="'MANAGER'"></app-manager-sidebar>
+    <app-finance-sidebar *ngSwitchCase="'FINANCE'"></app-finance-sidebar>
+    <app-employee-sidebar *ngSwitchCase="'EMPLOYEE'"></app-employee-sidebar>
+  </ng-container>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <p-toast></p-toast>
+    <div class="user-info-header d-flex justify-content-between align-items-center p-3 border-bottom">
+      <app-navbar></app-navbar>
+
+      <div class="profile-dropdown" [class.open]="isDropdownOpen">
+        <div class="profile-trigger d-flex align-items-center gap-2" (click)="toggleDropdown()">
+          <span class="fw-bold text-capitalize">{{ username }}</span>
+          <i class="fas fa-user-circle fa-lg text-primary"></i>
+        </div>
+        <ul class="dropdown-menu">
+          <li (click)="logout()">Logout</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Finance Dashboard Container -->
+    <div class="department-form-container">
+      <h2 class="main-heading">Employee Dashboard</h2>
+
+      <!-- Attendance Management Section -->
+      <div class="form-section">
+        <h3>Attendance Management</h3>
+
+        <form [formGroup]="clockInForm" (ngSubmit)="clockIn()" *ngIf="!clockedIn">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Working From:</label>
+              <select formControlName="workFrom">
+                <option value="">Select</option>
+                <option value="OFFICE">OFFICE</option>
+                <option value="REMOTE">REMOTE</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Mode:</label>
+              <select formControlName="mode">
+                <option value="">Select</option>
+                <option value="WEB">WEB</option>
+                <option value="MOBILE">MOBILE</option>
+                <option value="BIOMETRIC">BIOMETRIC</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Location (Optional):</label>
+              <input type="text" formControlName="location" placeholder="Enter your city" autocomplete="off"
+                (input)="onLocationInput($event)" />
+              <div *ngIf="clockInForm.get('location')?.invalid && clockInForm.get('location')?.touched"
+                class="text-danger">
+                <small>Only alphabets allowed (max 12).</small>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="action-button" [disabled]="clockInForm.invalid">Clock In</button>
+          </div>
+        </form>
+
+        <div *ngIf="clockedIn" class="alert alert-success mt-3">
+          <h5>Clocked in at {{ clockInTime | date:'shortTime' }}</h5>
+          <p><strong>Time Elapsed:</strong> {{ timerDisplay }}</p>
+          <form [formGroup]="clockOutForm" (ngSubmit)="clockOutAttendance()" class="mt-2">
+            <button type="submit" class="action-button cancel">Clock Out</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Regularize Attendance Section -->
+      <div class="form-section mt-4">
+        <h3>Regularize Attendance</h3>
+
+        <form [formGroup]="regularizeForm" (ngSubmit)="submitRegularization()">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Date:</label>
+              <input type="date" formControlName="date" [min]="currentMonthMin" [max]="today"
+                (input)="restrictFutureDate($event)" />
+            </div>
+
+            <div class="form-group">
+              <label>Reason:</label>
+              <input type="text" formControlName="reason" placeholder="Enter reason" (input)="onReasonInput($event)" />
+              <div
+                *ngIf="regularizeForm.get('reason')?.invalid && (regularizeForm.get('reason')?.dirty || regularizeForm.get('reason')?.touched)"
+                class="text-danger">
+                <small *ngIf="regularizeForm.get('reason')?.errors?.['required']">Reason is required.</small>
+                <small *ngIf="regularizeForm.get('reason')?.errors?.['pattern']">
+                  Only letters, numbers, commas, and periods are allowed.
+                </small>
+                <small *ngIf="regularizeForm.get('reason')?.errors?.['maxlength']">
+                  Reason cannot exceed 50 characters.
+                </small>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="action-button" [disabled]="regularizeForm.invalid">
+              Request Regularization
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

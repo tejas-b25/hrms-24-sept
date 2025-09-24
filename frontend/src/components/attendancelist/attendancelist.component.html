@@ -1,0 +1,34 @@
+<div class="attendance-wrapper">
+  <!-- Sidebar -->
+  <ng-container [ngSwitch]="userRole">
+    <app-sidebar *ngSwitchCase="'ADMIN'"></app-sidebar>
+    <app-hr-sidebar *ngSwitchCase="'HR'"></app-hr-sidebar>
+    <app-manager-sidebar *ngSwitchCase="'MANAGER'"></app-manager-sidebar>
+    <app-finance-sidebar *ngSwitchCase="'FINANCE'"></app-finance-sidebar>
+    <app-employee-sidebar *ngSwitchCase="'EMPLOYEE'"></app-employee-sidebar>
+  </ng-container>
+
+  <!-- Main content -->
+  <main class="attendance-container">
+    <button class="action-button back-button" (click)="goBack()">← Back</button>
+    <div class="top-header">Attendance Report</div>
+
+    <div class="date-picker">
+      <label>
+        Employee ID:
+        <input type="number" [(ngModel)]="empId" min="1" (input)="validateEmpId($event)" />
+      </label>
+      <label>From: <input type="date" [(ngModel)]="fromDate" /></label>
+      <label>To: <input type="date" [(ngModel)]="toDate" /></label>
+    </div>
+
+    <div *ngIf="loading" class="loading">Loading...</div>
+    <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
+
+    <div class="download-section">
+      <button (click)="downloadCSV()" [disabled]="!fromDate || !toDate">
+        ⬇ Download CSV
+      </button>
+    </div>
+  </main>
+</div>

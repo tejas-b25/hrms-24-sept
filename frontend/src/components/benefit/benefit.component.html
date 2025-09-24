@@ -1,0 +1,114 @@
+<div style="display: flex;">
+<!-- Role-based Sidebar -->
+<ng-container [ngSwitch]="userRole">
+<app-sidebar *ngSwitchCase="'ADMIN'"></app-sidebar>
+<app-hr-sidebar *ngSwitchCase="'HR'"></app-hr-sidebar>
+<app-manager-sidebar *ngSwitchCase="'MANAGER'"></app-manager-sidebar>
+<app-finance-sidebar *ngSwitchCase="'FINANCE'"></app-finance-sidebar>
+<app-employee-sidebar *ngSwitchCase="'EMPLOYEE'"></app-employee-sidebar>
+</ng-container>
+ 
+  <!-- Main Content -->
+<div style="flex: 1; padding: 15px;">
+<p-toast></p-toast>
+<!-- <p-confirmDialog></p-confirmDialog> -->
+ 
+    <!-- Back Button -->
+<div class="top-button-wrapper">
+<button class="action-button cancel" (click)="goBack()">← Back</button>
+</div>
+ 
+    <!-- Benefit Form Card -->
+<div *ngIf="isHrOrAdmin()" class="leave-type-form-container">
+<h2 class="main-heading">{{ isEdit ? 'Update Benefit' : 'Add Benefit' }}</h2>
+<form [formGroup]="benefitForm" (ngSubmit)="onSubmit()">
+<div class="form-sections">
+<div class="form-section">
+<h3>Benefit Details</h3>
+<div class="form-grid">
+ 
+              <!-- Name -->
+<div class="form-group">
+<label for="name">Name</label>
+<input id="name" type="text" formControlName="name" placeholder="Enter benefit name" />
+<small class="text-danger" *ngIf="benefitForm.get('name')?.invalid && benefitForm.get('name')?.touched && benefitForm.get('name')?.hasError('required')">
+                  Name is required.
+</small>
+<small class="text-danger" *ngIf="benefitForm.get('name')?.hasError('pattern')">
+                  Only letters and spaces allowed.
+</small>
+<small class="text-danger" *ngIf="benefitForm.get('name')?.hasError('maxlength')">
+                  Max 20 characters.
+</small>
+</div>
+ 
+              <!-- Description -->
+<div class="form-group">
+<label for="description">Description</label>
+<input id="description" type="text" formControlName="description" placeholder="Enter benefit description" />
+<small class="text-danger" *ngIf="benefitForm.get('description')?.invalid && benefitForm.get('description')?.touched && benefitForm.get('description')?.hasError('required')">
+                  Description is required.
+</small>
+<small class="text-danger" *ngIf="benefitForm.get('description')?.hasError('maxlength')">
+                  Max 100 characters.
+</small>
+</div>
+ 
+              <!-- Type -->
+<div class="form-group">
+<label for="type">Type</label>
+<select id="type" formControlName="type">
+<option value="">-- Select benefit type --</option>
+<option *ngFor="let type of benefitTypes" [value]="type">{{ type }}</option>
+</select>
+<small class="text-danger" *ngIf="benefitForm.get('type')?.invalid && benefitForm.get('type')?.touched">
+                  Type is required.
+</small>
+</div>
+ 
+              <!-- Taxable Checkbox -->
+<div class="form-group checkbox-group">
+<input type="checkbox" formControlName="isTaxable" id="isTaxable"/>
+<label for="isTaxable">Taxable?</label>
+</div>
+ 
+            </div>
+</div>
+</div>
+ 
+        <div class="form-actions">
+<button type="submit" class="action-button">{{ isEdit ? 'Update' : 'Create' }}</button>
+<button type="button" class="action-button cancel" (click)="resetForm()">Cancel</button>
+</div>
+</form>
+</div>
+ 
+    <!-- Benefits Table Card -->
+<div class="leave-type-form-container" style="margin-top: 2rem;">
+<h3 class="main-heading">All Benefits</h3>
+<table class="table">
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+<th>Type</th>
+<th>Taxable</th>
+<th *ngIf="isHrOrAdmin()">Actions</th>
+</tr>
+</thead>
+<tbody>
+<tr *ngFor="let b of benefits">
+<td>{{ b.name }}</td>
+<td>{{ b.description }}</td>
+<td>{{ b.type }}</td>
+<td>{{ b.isTaxable ? 'Yes' : 'No' }}</td>
+<td *ngIf="isHrOrAdmin()">
+<button class="action-button" (click)="editBenefit(b)">Edit</button>
+<button class="action-button cancel" (click)="confirmDelete(b)">Delete</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>

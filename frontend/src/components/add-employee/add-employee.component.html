@@ -1,0 +1,211 @@
+<div style="display: flex;">
+
+  <!-- Role-based Sidebar -->
+  <ng-container [ngSwitch]="userRole">
+    <app-sidebar *ngSwitchCase="'ADMIN'"></app-sidebar>
+    <app-hr-sidebar *ngSwitchCase="'HR'"></app-hr-sidebar>
+    <app-manager-sidebar *ngSwitchCase="'MANAGER'"></app-manager-sidebar>
+    <app-finance-sidebar *ngSwitchCase="'FINANCE'"></app-finance-sidebar>
+    <app-employee-sidebar *ngSwitchCase="'EMPLOYEE'"></app-employee-sidebar>
+  </ng-container>
+
+  <!-- Main Content -->
+  <div style="flex: 1; padding: 15px;">
+    <p-toast></p-toast>
+
+    <!-- Back Button -->
+    <div class="button-row mb-3">
+      <button class="action-button btn btn-secondary" (click)="goBack()">← Back</button>
+    </div>
+
+    <div class="employee-form-container">
+
+      <!-- Heading -->
+      <h2 class="main-heading">{{ isEditMode ? 'Edit Employee' : 'Add New Employee' }}</h2>
+
+      <!-- Employee Form -->
+      <form [formGroup]="employeeForm" (ngSubmit)="submitForm()" enctype="multipart/form-data" novalidate>
+        <div class="form-sections">
+
+           <!-- Employment Information Section -->
+          <div class="form-section">
+            <h3>Employment Information</h3>
+            <div class="form-grid">
+
+              <div class="form-group">
+                <label>User</label>
+                <select formControlName="userId">
+                  <option value="">Select User</option>
+                  <option *ngFor="let user of allUsers" [value]="user.userID">
+                    {{ user.username }} ({{ user.email }})
+                  </option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Department</label>
+                <select formControlName="departmentId">
+                  <option value="">Select Department</option>
+                  <option *ngFor="let dept of departments" [value]="dept.departmentId">
+                    {{ dept.name }} ({{ dept.departmentCode }})
+                  </option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Manager</label>
+                <select formControlName="managerId">
+                  <option value="">Select Manager</option>
+                  <option *ngFor="let mgr of managers" [value]="mgr.empId">
+                    {{ mgr.firstName }} {{ mgr.lastName }} ({{ mgr.employeeCode }})
+                  </option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Employee Code</label>
+                <input type="text" formControlName="employeeCode" placeholder="EMP123"
+                       maxlength="10" (keypress)="allowAlphanumeric($event)" />
+              </div>
+
+              <div class="form-group">
+                <label>Joining Date</label>
+                <input type="date" [attr.max]="maxDate" (input)="restrictYear($event, 'joiningDate')" formControlName="joiningDate" />
+              </div>
+
+              <div class="form-group">
+                <label>Probation End Date</label>
+                <input type="date" [attr.max]="maxDate" (input)="restrictYear($event, 'probationEndDate')" formControlName="probationEndDate" />
+              </div>
+
+              <div class="form-group">
+                <label>Job Type</label>
+                <select formControlName="jobType">
+                  <option value="FULL_TIME">Full Time</option>
+                  <option value="PART_TIME">Part Time</option>
+                  <option value="CONTRACT">Contract</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Status</label>
+                <select formControlName="status">
+                  <option value="ACTIVE">Active</option>
+                  <option value="ON_NOTICE">On Notice</option>
+                  <option value="RESIGNED">Resigned</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Designation</label>
+                <input type="text" formControlName="designation" placeholder="Software Engineer"
+                       (keypress)="allowAlphanumeric($event)" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Personal Information Section -->
+          <div class="form-section">
+            <h3>Personal Information</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>First Name</label>
+                <input type="text" formControlName="firstName" placeholder="John" (keypress)="allowLettersOnly($event)" />
+                <small class="text-danger" *ngIf="employeeForm.get('firstName')?.touched && employeeForm.get('firstName')?.invalid">
+                  First name is required
+                </small>
+              </div>
+
+              <div class="form-group">
+                <label>Last Name</label>
+                <input type="text" formControlName="lastName" placeholder="Doe" (keypress)="allowLettersOnly($event)" />
+                <small class="text-danger" *ngIf="employeeForm.get('lastName')?.touched && employeeForm.get('lastName')?.invalid">
+                  Last name is required
+                </small>
+              </div>
+
+              <div class="form-group">
+                <label>Email</label>
+                <input type="email" formControlName="email" placeholder="example@domain.com" />
+              </div>
+
+              <div class="form-group">
+                <label>Contact Number</label>
+                <input type="text" formControlName="contactNumber" placeholder="10-digit number"
+                       maxlength="10" (keypress)="allowNumbersOnly($event)" />
+              </div>
+
+              <div class="form-group">
+                <label>Emergency Contact</label>
+                <input type="text" formControlName="emergencyContact" placeholder="Emergency contact number"
+                       maxlength="10" (keypress)="allowNumbersOnly($event)" />
+              </div>
+
+              <div class="form-group">
+                <label>Gender</label>
+                <select formControlName="gender">
+                  <option value="">Select Gender</option>
+                  <option value="MALE">Male</option>
+                  <option value="FEMALE">Female</option>
+                  <option value="NON_BINARY">Non-Binary</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Date of Birth</label>
+                <input type="date" [attr.max]="maxDate" (input)="restrictYear($event, 'dob')" formControlName="dob" />
+              </div>
+            </div>
+          </div>
+
+         
+
+          <!-- Other Details Section -->
+          <div class="form-section">
+            <h3>Other Details</h3>
+            <div class="form-grid">
+
+              <div class="form-group">
+                <label>Education</label>
+                <input type="text" formControlName="education" placeholder="B.Tech, M.Sc, etc." />
+              </div>
+
+              <div class="form-group">
+                <label>Experience</label>
+                <input type="text" formControlName="experience" placeholder="3 years, Fresher, etc." />
+              </div>
+
+              <div class="form-group">
+                <label>Certifications</label>
+                <input type="text" formControlName="certifications" placeholder="AWS, PMP, etc." />
+              </div>
+
+              <div class="form-group">
+                <label>Location</label>
+                <input type="text" formControlName="location" placeholder="City/Branch" (keypress)="allowLettersOnly($event)" />
+              </div>
+
+              <div class="form-group">
+                <label>Exit Reason</label>
+                <input type="text" formControlName="exitReason" placeholder="Reason for exit (if applicable)" />
+              </div>
+
+              <div class="form-group">
+                <label>Upload Photo</label>
+                <input type="file" (change)="onPhotoChange($event)" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="form-actions">
+          <button class="action-button" type="submit" [disabled]="employeeForm.invalid">
+            {{ isEditMode ? 'Update' : 'Submit' }}
+          </button>
+          <button class="action-button cancel" type="button" (click)="employeeForm.reset()">Clear</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

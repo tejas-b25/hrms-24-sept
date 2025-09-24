@@ -1,0 +1,65 @@
+<div class="app-container">
+  <!-- Role-based Sidebar -->
+  <ng-container [ngSwitch]="userRole">
+    <app-sidebar *ngSwitchCase="'ADMIN'"></app-sidebar>
+    <app-hr-sidebar *ngSwitchCase="'HR'"></app-hr-sidebar>
+    <app-manager-sidebar *ngSwitchCase="'MANAGER'"></app-manager-sidebar>
+    <app-finance-sidebar *ngSwitchCase="'FINANCE'"></app-finance-sidebar>
+    <app-employee-sidebar *ngSwitchCase="'EMPLOYEE'"></app-employee-sidebar>
+  </ng-container>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <p-toast></p-toast>
+
+    <!-- Back Button -->
+    <div class="top-button-wrapper">
+      <button class="action-button cancel" (click)="goBack()">← Back</button>
+    </div>
+
+    <div class="form-container mt-4">
+      <h2 class="main-heading">Attendance Management</h2>
+      <h4 class="sub-heading">Regularization Requests</h4>
+
+      <div class="table-responsive mt-3">
+        <table class="table table-striped table-bordered">
+          <thead class="table-header">
+            <tr>
+              <th>ID</th>
+              <th>Employee</th>
+              <th>Date</th>
+              <th>Reason</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let request of attendanceRequests">
+              <td>{{ request.attendanceId }}</td>
+              <td>{{ request.employee?.firstName }} {{ request.employee?.lastName }}</td>
+              <td>{{ request.date }}</td>
+              <td>{{ request.regularizationReason }}</td>
+              <td>{{ request.status }}</td>
+              <td>
+                <button
+                  class="action-button success btn-sm"
+                  (click)="approveRegularizationRequest(request.attendanceId)"
+                  [disabled]="request.status === 'APPROVED'"
+                >
+                  Approve
+                </button>
+                <button
+                  class="action-button cancel btn-sm"
+                  (click)="rejectRegularization(request.attendanceId)"
+                  [disabled]="request.status === 'REJECTED'"
+                >
+                  Reject
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

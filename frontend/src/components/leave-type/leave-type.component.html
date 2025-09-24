@@ -1,0 +1,120 @@
+<div class="app-container" style="display: flex;">
+  <!-- Role-based Sidebar -->
+  <ng-container [ngSwitch]="userRole">
+    <app-sidebar *ngSwitchCase="'ADMIN'"></app-sidebar>
+    <app-hr-sidebar *ngSwitchCase="'HR'"></app-hr-sidebar>
+    <app-manager-sidebar *ngSwitchCase="'MANAGER'"></app-manager-sidebar>
+    <app-finance-sidebar *ngSwitchCase="'FINANCE'"></app-finance-sidebar>
+    <app-employee-sidebar *ngSwitchCase="'EMPLOYEE'"></app-employee-sidebar>
+  </ng-container>
+
+  <!-- Main Content -->
+  <div class="main-content" style="flex: 1; padding: 20px;">
+    <p-toast></p-toast>
+    <p-confirmDialog></p-confirmDialog>
+
+    <!-- Back Button -->
+    <div class="button-row mb-3">
+      <button class="action-button cancel" (click)="goBack()">← Back</button>
+    </div>
+
+    <!-- Leave Type Form (Only for HR/Admin) -->
+    <div *ngIf="isHrOrAdmin()" class="leave-type-form-container card p-4 mb-4">
+      <h2 class="main-heading mb-3">📝 Leave Type Configuration</h2>
+
+      <form [formGroup]="leaveTypeForm" (ngSubmit)="confirmSave()">
+        <div class="form-sections">
+
+          <!-- Basic Info Section -->
+          <div class="form-section">
+            <h3>Basic Information</h3>
+            <div class="form-grid">
+              <!-- Leave Type ID -->
+              <div class="form-group">
+                <label for="leaveTypeId">Leave Type ID (for update/delete)</label>
+                <input id="leaveTypeId" formControlName="leaveTypeId" type="text" placeholder="Leave blank for new" />
+              </div>
+
+              <!-- Leave Type Name -->
+              <div class="form-group">
+                <label for="leaveTypeName">Leave Type Name</label>
+                <select id="leaveTypeName" formControlName="name">
+                  <option value="">-- Select Leave Type --</option>
+                  <option *ngFor="let type of leaveTypeNames" [value]="type">
+                    {{ type.replace('_', ' ') }}
+                  </option>
+                </select>
+              </div>
+
+              <!-- Max Days -->
+              <div class="form-group">
+                <label for="maxDays">Max Days Per Year</label>
+                <input id="maxDays" type="number" formControlName="maxDaysPerYear" placeholder="e.g., 12" min="0" (input)="preventNegative($event)" />
+              </div>
+
+              <!-- Description -->
+              <div class="form-group">
+                <label for="description">Description</label>
+                <textarea id="description" rows="2" formControlName="description" placeholder="Enter description"></textarea>
+              </div>
+
+              <!-- Approval Flow -->
+              <div class="form-group">
+                <label for="approvalFlow">Approval Flow (comma separated roles)</label>
+                <input id="approvalFlow" type="text" formControlName="approvalFlow" placeholder="e.g., Manager, HR" />
+              </div>
+
+              <!-- Encashable & Carry Forward -->
+              <div class="form-group checkbox-group" style="display:flex; gap:20px; align-items:center;">
+                <div>
+                  <input type="checkbox" formControlName="encashable" id="encashable" />
+                  <label for="encashable">Encashable</label>
+                </div>
+                <div>
+                  <input type="checkbox" formControlName="carryForward" id="carryForward" />
+                  <label for="carryForward">Carry Forward</label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Form Buttons -->
+          <div class="form-actions mt-3">
+            <button type="submit" class="action-button">💾 Save</button>
+            <button type="button" class="action-button cancel" (click)="fetchById()">🔍 Fetch by ID</button>
+            <button type="button" class="action-button cancel" (click)="deleteById()">🗑️ Delete by ID</button>
+            <button type="button" class="action-button cancel" (click)="resetForm()">🧹 Reset</button>
+          </div>
+
+        </div>
+      </form>
+    </div>
+
+    <!-- Leave Types Table -->
+    <div class="leave-types-table-container card p-4">
+      <h3 class="mb-3">Existing Leave Types</h3>
+      <table class="table table-bordered">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Max Days</th>
+            <th>Carry Forward</th>
+            <th>Encashable</th>
+            <th>Approval Flow</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let lt of leaveTypes">
+            <td>{{ lt.leaveTypeId }}</td>
+            <td>{{ lt.name.replace('_', ' ') }}</td>
+            <td>{{ lt.maxDaysPerYear }}</td>
+            <td>{{ lt.carryForward ? 'Yes' : 'No' }}</td>
+            <td>{{ lt.encashable ? 'Yes' : 'No' }}</td>
+            <td>{{ lt.approvalFlow }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

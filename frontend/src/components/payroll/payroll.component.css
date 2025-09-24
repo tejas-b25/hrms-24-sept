@@ -1,0 +1,97 @@
+.app-container {
+  display: flex;
+  min-height: 100vh;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.main-content {
+  flex: 1;
+  padding: 20px;
+  background-color: #f7f9fc;
+}
+
+.top-button-wrapper {
+  margin-bottom: 15px;
+}
+
+.action-button {
+  padding: 8px 16px;
+  margin-right: 8px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  background-color: #007bff;
+  color: white;
+  transition: background-color 0.3s ease;
+}
+
+.action-button:hover {
+  background-color: #0056b3;
+}
+
+.action-button.cancel {
+  background-color: #6c757d;
+}
+
+.action-button.cancel:hover {
+  background-color: #5a6268;
+}
+
+.action-button.success {
+  background-color: #28a745;
+}
+
+.action-button.success:hover {
+  background-color: #218838;
+}
+
+.form-container {
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.main-heading {
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+  font-weight: 600;
+  color: #333;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  font-weight: 500;
+  margin-bottom: 5px;
+  display: block;
+}
+
+.form-control {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #ced4da;
+  font-size: 1rem;
+}
+
+.invalid-input {
+  border-color: #dc3545;
+}
+
+.text-danger {
+  color: #dc3545;
+}
+
+.form-actions {
+  margin-top: 20px;
+}
+
+.payroll-card {
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}

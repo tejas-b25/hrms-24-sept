@@ -1,0 +1,102 @@
+<div class="app-container">
+  <!-- Role-based Sidebar -->
+  <ng-container [ngSwitch]="userRole">
+    <app-sidebar *ngSwitchCase="'ADMIN'"></app-sidebar>
+    <app-hr-sidebar *ngSwitchCase="'HR'"></app-hr-sidebar>
+    <app-manager-sidebar *ngSwitchCase="'MANAGER'"></app-manager-sidebar>
+    <app-finance-sidebar *ngSwitchCase="'FINANCE'"></app-finance-sidebar>
+    <app-employee-sidebar *ngSwitchCase="'EMPLOYEE'"></app-employee-sidebar>
+  </ng-container>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <p-toast></p-toast>
+
+    <!-- Back Button -->
+    <div class="top-button-wrapper">
+      <button class="action-button cancel" (click)="goBack()">← Back</button>
+    </div>
+
+    <div class="department-form-container">
+      <h2 class="main-heading">Register User</h2>
+
+      <form #registerForm="ngForm" (ngSubmit)="onSubmit()" *ngIf="!isLoading" novalidate>
+
+        <!-- Username -->
+        <div class="form-group">
+          <label>Username</label>
+          <input
+            type="text"
+            [(ngModel)]="user.username"
+            name="username"
+            required
+            minlength="5"
+            maxlength="20"
+            #username="ngModel"
+            placeholder="Enter username (5–20 characters)"
+            class="form-control"
+            [ngClass]="{ 'invalid-input': username.invalid && username.touched }"
+            (keypress)="allowOnlyLowerAlphaNumeric($event)"
+            (input)="sanitizeUsername()" />
+          <div class="text-danger" *ngIf="username.invalid && username.touched">
+            <small *ngIf="username.errors?.['required']">Username is required.</small>
+            <small *ngIf="usernamePatternInvalid">Only lowercase letters and numbers allowed.</small>
+            <small *ngIf="username.errors?.['minlength']">Minimum 5 characters required.</small>
+            <small *ngIf="username.errors?.['maxlength']">Maximum 20 characters allowed.</small>
+          </div>
+        </div>
+
+        <!-- Email -->
+        <div class="form-group">
+          <label>Email</label>
+          <input
+            type="email"
+            [(ngModel)]="user.email"
+            name="email"
+            required
+            email
+            #email="ngModel"
+            placeholder="Enter valid email address"
+            class="form-control"
+            [ngClass]="{ 'invalid-input': email.invalid && email.touched }"
+            (keypress)="blockUppercaseEmail($event)"
+            (input)="sanitizeEmail()" />
+          <div class="text-danger" *ngIf="email.invalid && email.touched">
+            <small *ngIf="email.errors?.['required']">Email is required.</small>
+            <small *ngIf="email.errors?.['email']">Enter a valid email.</small>
+            <small *ngIf="emailPatternInvalid">Email must be lowercase only.</small>
+          </div>
+        </div>
+
+        <!-- Role -->
+        <div class="form-group">
+          <label>Role</label>
+          <select
+            [(ngModel)]="user.role"
+            name="role"
+            required
+            #role="ngModel"
+            class="form-control"
+            [ngClass]="{ 'invalid-input': role.invalid && role.touched }">
+            <option value="">Select Role</option>
+            <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
+          </select>
+          <div class="text-danger" *ngIf="role.invalid && role.touched">
+            <small>Role is required.</small>
+          </div>
+        </div>
+
+        <!-- Form Buttons -->
+        <div class="form-actions">
+          <button type="submit" class="action-button">{{ 'Register' }}</button>
+          <button type="button" class="action-button cancel" (click)="resetForm()">Clear</button>
+        </div>
+
+        <!-- Error Message -->
+        <div *ngIf="errorMessage" class="text-danger mt-2">{{ errorMessage }}</div>
+      </form>
+
+      <div *ngIf="isLoading" class="loading-text">Registering user...</div>
+    </div>
+  </div>
+</div>
