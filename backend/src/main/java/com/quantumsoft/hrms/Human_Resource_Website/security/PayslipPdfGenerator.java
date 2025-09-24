@@ -35,21 +35,30 @@ public class PayslipPdfGenerator {
         Font boldFont = new Font(Font.HELVETICA, 10, Font.BOLD);
 
         // Load logo image
-        try {
-            Image logo = Image.getInstance("src/main/resources/static/images/logo.png");
-            logo.scaleToFit(150, 100);
-            PdfPCell logoCell = new PdfPCell(logo, false);
-            logoCell.setBorder(Rectangle.NO_BORDER);
-            logoCell.setHorizontalAlignment(Element.ALIGN_CENTER);
-            logoCell.setVerticalAlignment(Element.ALIGN_MIDDLE);  // this makes it vertically centered
-            logoCell.setPaddingBottom(5);
-            headerTable.addCell(logoCell);
-        } catch (Exception e) {
-            // If logo not found, add empty cell
-            PdfPCell noLogoCell = new PdfPCell(new Phrase(""));
-            noLogoCell.setBorder(Rectangle.NO_BORDER);
-            headerTable.addCell(noLogoCell);
-        }
+try {
+    // Load logo from classpath
+    java.net.URL logoUrl = PayslipPdfGenerator.class.getClassLoader()
+            .getResource("static/images/logo.png");
+    if (logoUrl != null) {
+        Image logo = Image.getInstance(logoUrl);
+        logo.scaleToFit(150, 100);
+        PdfPCell logoCell = new PdfPCell(logo, false);
+        logoCell.setBorder(Rectangle.NO_BORDER);
+        logoCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+        logoCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        logoCell.setPaddingBottom(5);
+        headerTable.addCell(logoCell);
+    } else {
+        // If not found, add empty cell
+        PdfPCell noLogoCell = new PdfPCell(new Phrase(""));
+        noLogoCell.setBorder(Rectangle.NO_BORDER);
+        headerTable.addCell(noLogoCell);
+    }
+} catch (Exception e) {
+    PdfPCell noLogoCell = new PdfPCell(new Phrase(""));
+    noLogoCell.setBorder(Rectangle.NO_BORDER);
+    headerTable.addCell(noLogoCell);
+}
 
 
         // Company Name & Address cell
