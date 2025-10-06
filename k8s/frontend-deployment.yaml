@@ -31,7 +31,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: tejas2506/hrms-frontend-team2:29sept
+          image: tejas2506/hr-ms-frontend:6oct
           imagePullPolicy: Always
           ports:
             - containerPort: 80
