@@ -30,7 +30,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: tejas2506/hrms-backend-team2:29sept
+          image: tejas2506/hr-ms-backend:6oct
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
