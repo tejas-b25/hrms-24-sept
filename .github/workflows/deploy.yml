@@ -1,0 +1,139 @@
+name: CI/CD - Deploy HRMS App to AWS EC2
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  AWS_REGION: ap-south-1
+  ECR_BACKEND: hrms-back
+  ECR_FRONTEND: hrms-front
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Step 2: Configure AWS credentials
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # Step 3: Login to ECR
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # Step 4: Build and push backend image
+      - name: Build and push backend image to ECR
+        run: |
+          ECR_REGISTRY=${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG=latest
+          docker build -t $ECR_REGISTRY/${{ env.ECR_BACKEND }}:$IMAGE_TAG ./backend
+          docker push $ECR_REGISTRY/${{ env.ECR_BACKEND }}:$IMAGE_TAG
+
+      # Step 5: Build and push frontend image
+      - name: Build and push frontend image to ECR
+        run: |
+          ECR_REGISTRY=${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG=latest
+          docker build -t $ECR_REGISTRY/${{ env.ECR_FRONTEND }}:$IMAGE_TAG ./frontend
+          docker push $ECR_REGISTRY/${{ env.ECR_FRONTEND }}:$IMAGE_TAG
+
+      # Step 6: SSH into EC2 and deploy with Docker Compose
+      - name: Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            set -e
+
+            # Install Docker & Docker Compose if not present
+            if ! command -v docker &> /dev/null; then
+              sudo apt-get update -y
+              sudo apt-get install -y ca-certificates curl gnupg lsb-release
+              sudo mkdir -p /etc/apt/keyrings
+              curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+              echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+              sudo apt-get update -y
+              sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+              sudo usermod -aG docker ubuntu
+              sudo systemctl enable docker
+              sudo systemctl start docker
+            fi
+
+            if ! command -v docker-compose &> /dev/null; then
+              sudo apt-get install -y docker-compose
+            fi
+
+            # Create or navigate to app directory
+            cd ~/hrms-deploy || mkdir ~/hrms-deploy && cd ~/hrms-deploy
+
+            # Stop running containers safely
+            docker-compose down || true
+
+            # Recreate docker-compose.yml with latest images from ECR
+            cat > docker-compose.yml <<'EOF'
+            version: '3.4'
+
+            services:
+              springboot-service:
+                image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_BACKEND }}:latest
+                environment:
+                  SPRING_DATASOURCE_URL: jdbc:mysql://mysql-service:3306/hrms
+                  SPRING_DATASOURCE_USERNAME: root
+                  SPRING_DATASOURCE_PASSWORD: root
+                ports:
+                  - "8080:8080"
+                depends_on:
+                  - mysql-service
+                networks:
+                  - mynetwork
+
+              frontend:
+                image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_FRONTEND }}:latest
+                ports:
+                  - "80:80"
+                depends_on:
+                  - mysql-service
+                networks:
+                  - mynetwork
+
+              mysql-service:
+                image: mysql:8.0
+                environment:
+                  MYSQL_ROOT_PASSWORD: "root"
+                  MYSQL_DATABASE: "hrms"
+                  MYSQL_PASSWORD: "root"
+                ports:
+                  - "3306:3306"
+                volumes:
+                  - mysql-data:/var/lib/mysql
+                networks:
+                  - mynetwork
+
+            networks:
+              mynetwork:
+
+            volumes:
+              mysql-data:
+            EOF
+
+            # Pull and start containers
+            docker-compose pull
+            docker-compose up -d
+
+            # Clean old images to save space
+            docker image prune -f
+
+            echo "✅ Deployment completed successfully!"
